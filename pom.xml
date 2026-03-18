@@ -10,7 +10,21 @@
     <name>Quarkus Workshop :: Super-Heroes :: R00T</name>
     <properties>
         <assembly-plugin.version>3.6.0</assembly-plugin.version>
+        <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
+        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+        <quarkus.platform.version>3.27.0</quarkus.platform.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${quarkus.platform.group-id}</groupId>
+                <artifactId>${quarkus.platform.artifact-id}</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <modules>
         <module>super-heroes/ui-super-heroes</module>
         <module>super-heroes/rest-villains</module>
@@ -48,7 +62,7 @@
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${quarkus.platform.version}</version>
                 <executions>
                     <execution>
                         <id>get-wrapper</id>
@@ -81,6 +95,7 @@
                     <finalName>quarkus-super-heroes</finalName>
                     <appendAssemblyId>true</appendAssemblyId>
                     <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                    <skipAssembly>true</skipAssembly>
                     <attach>false</attach>
                     <descriptors>
                         <descriptor>assembly.xml</descriptor>
@@ -110,13 +125,7 @@
                 </file>
             </activation>
             <modules>
-                <module>super-heroes/extension-version</module>
                 <module>super-heroes/rest-villains</module>
-                <module>super-heroes/rest-heroes</module>
-                <module>super-heroes/rest-fights</module>
-                <module>super-heroes/event-statistics</module>
-                <module>super-heroes/rest-narration</module>
-                <module>super-heroes/load-super-heroes</module>
             </modules>
         </profile>
         <profile>
@@ -130,21 +139,12 @@
             </activation>
             <modules>
                 <module>super-heroes/rest-villains</module>
-                <module>super-heroes/rest-heroes</module>
-                <module>super-heroes/rest-fights</module>
             </modules>
         </profile>
         <profile>
             <id>full</id> <!-- Needs to be manually invoked or it will trigger in the CI, #280 should fix -->
             <modules>
-                <module>super-heroes/extension-version</module>
                 <module>super-heroes/rest-villains</module>
-                <module>super-heroes/rest-heroes</module>
-                <module>super-heroes/rest-fights</module>
-                <module>super-heroes/event-statistics</module>
-                <module>super-heroes/rest-narration</module>
-                <module>super-heroes/load-super-heroes</module>
-                <module>docs</module>
             </modules>
         </profile>
     </profiles>
