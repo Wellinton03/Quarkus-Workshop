@@ -8,6 +8,10 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.*;
 
+import java.time.Instant;
+
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
+
 import java.util.List;
 
 import java.util.Random;
@@ -155,7 +159,6 @@ public class FightResourceTest {
 
     private TypeRef< List< Fight > > getFightTypeRef() {
         return new TypeRef< List< Fight > >() {
-            // Kept empty on purpose
         };
     }
 
@@ -181,5 +184,30 @@ public class FightResourceTest {
         assertEquals( villain.picture, DefaultTestVillain.DEFAULT_VILLAIN_PICTURE );
         assertEquals( villain.level, DefaultTestVillain.DEFAULT_VILLAIN_LEVEL );
         assertEquals( villain.powers, DefaultTestVillain.DEFAULT_VILLAIN_POWERS );
+    }
+
+    @Test
+    void shouldNarrate() {
+        Fight fight = new Fight();
+        fight.fightDate = Instant.now();
+        fight.winnerName = DEFAULT_WINNER_NAME;
+        fight.winnerLevel = DEFAULT_WINNER_LEVEL;
+        fight.winnerPowers = DEFAULT_WINNER_POWERS;
+        fight.winnerPicture = DEFAULT_WINNER_PICTURE;
+        fight.loserName = DEFAULT_LOSER_NAME;
+        fight.loserLevel = DEFAULT_LOSER_LEVEL;
+        fight.loserPowers = DEFAULT_LOSER_POWERS;
+        fight.loserPicture = DEFAULT_LOSER_PICTURE;
+        fight.winnerTeam = "villains";
+        fight.loserTeam = "heroes";
+
+        given().body( fight )
+            .header( CONTENT_TYPE, APPLICATION_JSON )
+            .header( ACCEPT, TEXT_PLAIN )
+            .when()
+            .post( "/api/fights/narrate" )
+            .then()
+            .statusCode( CREATED.getStatusCode() )
+            .body( startsWith( "Lorem ipsum dolor sit amet" ) );
     }
 }

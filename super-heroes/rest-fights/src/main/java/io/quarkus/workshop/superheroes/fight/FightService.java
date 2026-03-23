@@ -1,9 +1,7 @@
 package io.quarkus.workshop.superheroes.fight;
 
-import io.quarkus.workshop.superheroes.fight.client.Hero;
-import io.quarkus.workshop.superheroes.fight.client.HeroProxy;
-import io.quarkus.workshop.superheroes.fight.client.Villain;
-import io.quarkus.workshop.superheroes.fight.client.VillainProxy;
+import io.quarkus.workshop.superheroes.fight.client.*;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
@@ -14,6 +12,9 @@ import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
+
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import static jakarta.transaction.Transactional.TxType.REQUIRED;
 import static jakarta.transaction.Transactional.TxType.SUPPORTS;
@@ -26,9 +27,12 @@ public class FightService {
     HeroProxy heroProxy;
     @RestClient
     VillainProxy villainProxy;
-
     @Inject
     Logger logger;
+    @RestClient
+    NarrationProxy narrationProxy;
+    @Channel( "fights" )
+    Emitter< Fight > emitter;
 
     private final Random random = new Random();
 
@@ -40,10 +44,12 @@ public class FightService {
         return Fight.findById( id );
     }
 
+    @Fallback( fallbackMethod = "fallbackRandomVillain" )
     Villain findRandomVillain() {
         return villainProxy.findRandomVillain();
     }
 
+    @Fallback( fallbackMethod = "fallbackRandomHero" )
     Hero findRandomHero() {
         return heroProxy.findRandomHero();
     }
@@ -75,6 +81,8 @@ public class FightService {
 
         fight.fightDate = Instant.now();
         fight.persist();
+
+        emitter.send(fight).toCompletableFuture().join();
 
         return fight;
     }
@@ -109,6 +117,30 @@ public class FightService {
         fight.winnerTeam = "villains";
         fight.loserTeam = "heroes";
         return fight;
+    }
+
+    public Hero fallbackRandomHero() {
+        logger.warn( "Falling back on Hero" );
+        Hero hero = new Hero();
+        hero.name = "Fallback hero";
+        hero.picture = "https://dummyimage.com/240x320/1e8fff/ffffff&text=Fallback+Hero";
+        hero.powers = "Fallback hero powers";
+        hero.level = 1;
+        return hero;
+    }
+
+    public Villain fallbackRandomVillain() {
+        logger.warn( "Falling back on Villain" );
+        Villain villain = new Villain();
+        villain.name = "Fallback villain";
+        villain.picture = "https://dummyimage.com/240x320/b22222/ffffff&text=Fallback+Villain";
+        villain.powers = "Fallback villain powers";
+        villain.level = 42;
+        return villain;
+    }
+
+    public String narrateFight( Fight fight ) {
+        return narrationProxy.narrate( fight );
     }
 
 }

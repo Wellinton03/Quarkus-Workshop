@@ -1,7 +1,9 @@
 package io.quarkus.workshop.superheroes.fight;
 
+import io.quarkus.workshop.superheroes.fight.client.NarrationProxy;
 import jakarta.ws.rs.*;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.jboss.logging.Logger;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -67,4 +69,14 @@ public class FightResource {
         return "Hello Fight Resource";
     }
 
+    @POST
+    @Path( "/narrate" )
+    @Consumes( APPLICATION_JSON )
+    @Produces( TEXT_PLAIN )
+    public Response narrateFight( @Valid Fight fight ) {
+        logger.debug( "Narrate the fight " + fight );
+        String narration = service.narrateFight( fight );
+        return Response.status( Response.Status.CREATED ).entity( narration ).build();
+
+    }
 }

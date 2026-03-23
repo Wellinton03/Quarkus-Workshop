@@ -40,20 +40,20 @@ public class HeroResource {
         this.logger = logger;
     }
 
-    @Operation( summary = "Returns a random hero" )
+    @Operation(summary = "Returns a random hero")
     @GET
-    @Path( "/random" )
-    @APIResponse( responseCode = "200", content = @Content( mediaType = APPLICATION_JSON, schema = @Schema( implementation = Hero.class, required = true ) ) )
-    public Uni< RestResponse< Hero > > getRandomHero() {
+    @Path("/random")
+    @APIResponse(responseCode = "200", content = @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = Hero.class, required = true)))
+    public Uni<RestResponse<Hero>> getRandomHero() {
         return Hero.findRandom()
-            .onItem().ifNotNull().transform( h -> {
-                this.logger.debugf( "Found random hero: %s", h );
-                return RestResponse.ok( h );
-            } )
-            .onItem().ifNull().continueWith( () -> {
-                this.logger.debug( "No random villain found" );
+            .onItem().ifNotNull().transform(h -> {
+                this.logger.debugf("Found random hero: %s", h);
+                return RestResponse.ok(h);
+            })
+            .onItem().ifNull().continueWith(() -> {
+                this.logger.debug("No random villain found");
                 return RestResponse.notFound();
-            } );
+            });
     }
 
     @Operation( summary = "Returns all the heroes from the database" )
